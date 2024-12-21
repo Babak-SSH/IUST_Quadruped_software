@@ -11,6 +11,7 @@
 #include <string>
 
 #include "rt/rt_joystick_interface.h"
+#include "Utilities/EdgeTrigger.h"
 
 pthread_mutex_t joy_data_m;
 
@@ -95,9 +96,35 @@ size_t get_axis_state(struct js_event *event, struct axis_state axes[3])
 }
 
 
-void update_joystick(Taranis_X7_data* data) {
+void update_joystick() {
     struct axis_state axes[3] = {0};
     size_t axis;
+    int selected_mode = 0;
+
 	pthread_mutex_lock(&joy_data_m);
+    if (event.type == JS_EVENT_BUTTON) {
+        switch (event.number) {
+            case 0:
+                selected_mode = RC_mode::OFF;
+                break;
+            case 1:
+                selected_mode = RC_mode::RECOVERY_STAND;
+                break;
+            case 2:
+                selected_mode = RC_mode::LOCOMOTION;
+                break;
+            default:
+                printf("[joystick interface] unknown button\n");
+                break;
+        }
+    }
 	pthread_mutex_unlock(&joy_data_m);
+
+    bool trigger = mode_edge_trigger.trigger(selected_mode);
+    if(trigger || selected_mode == RC_mode::OFF || selected_mode == RC_mode::RECOVERY_STAND) {
+        if(trigger) {
+            printf("MODE TRIGGER!\n");
+        }
+        rc_control.mode = selected_mode;
+    }
 }
