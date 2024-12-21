@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <string>
 
-#include "rt_joystick_interface.h"
+#include "rt/rt_joystick_interface.h"
 
 pthread_mutex_t joy_data_m;
 
@@ -18,6 +18,15 @@ struct js_event event;
 
 #define J_BUS_PORT "/dev/input/js0"
 
+
+// Controller Settings
+rc_control_settings rc_control;
+
+
+// Controller Settings
+void get_js_control_settings(void *settings) {
+  v_memcpy(settings, &rc_control, sizeof(rc_control_settings));
+}
 
 /*!
  * Receive data packets
